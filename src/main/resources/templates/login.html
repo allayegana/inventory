@@ -24,7 +24,7 @@
 <body>
 <div class="login-container">
   <h1 class="mb-4 text-center">Please sign in</h1>
-  <form th:action="@{/login}" method="post">
+  <form th:action="@{/api/v1/inventory/login}" method="post">
     <div class="form-group">
       <label for="username">User name</label>
       <input type="text" class="form-control" id="username" name="username" required />

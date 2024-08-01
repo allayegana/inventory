@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Inventory Management - Reports</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .reports {
+            padding: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .card-body {
+            padding: 2rem;
+            text-align: center;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .btn-back {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animated {
+            animation: fadeIn 0.5s ease-in;
+        }
+    </style>
+</head>
+<body>
+<div class="container reports">
+  <h1 class="text-center mb-5">Inventory Reports</h1>
+  <a href="/api/v1/inventory/home" class="btn btn-outline-secondary btn-back">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </a>
+  <div class="row">
+    <div class="col-md-12 mb-4 animated" style="animation-delay: 0.1s;">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">All Products Report</h5>
+          <table class="table table-hover">
+            <!-- ... table header ... -->
+            <tbody>
+            <tr th:each="product : ${allProducts}">
+              <td th:text="${product.productId}">Product ID</td>
+              <td th:text="${product.productName}">Product Name</td>
+              <td th:text="${product.quantity}">Quantity</td>
+              <td th:text="${product.price}">Price</td>
+              <td th:text="${product.description}">Description</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-4">
+    <div class="col-md-12 mb-4 animated" style="animation-delay: 0.2s;">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">Low Stock Products Report</h5>
+          <table class="table table-hover">
+            <!-- ... table header ... -->
+            <tbody>
+            <tr th:each="product : ${lowStockProducts}">
+              <td th:text="${product.productId}">Product ID</td>
+              <td th:text="${product.productName}">Product Name</td>
+              <td th:text="${product.quantity}">Quantity</td>
+              <td th:text="${product.price}">Price</td>
+              <td th:text="${product.description}">Description</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

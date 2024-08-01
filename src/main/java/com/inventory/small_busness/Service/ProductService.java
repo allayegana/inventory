@@ -18,12 +18,29 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Product save(Product product) {
-        return productRepository.save(product);
+
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
     }
 
-    public void delete(Long id) {
-        productRepository.deleteById(id);
+    public List<Product> getLowStockProducts(int threshold) {
+        return productRepository.findByQuantityLessThan(threshold);
+    }
+
+    public Product addOrUpdateProduct(Product newProduct) throws Exception {
+        Product existingProduct = productRepository.findByProductId(newProduct.getProductId());
+        if (existingProduct != null) {
+            // Product with this productId already exists, update the quantity
+            existingProduct.setQuantity(existingProduct.getQuantity() + newProduct.getQuantity());
+            // Optionally update other fields if needed
+            newProduct.setProductName(existingProduct.getProductName());
+            newProduct.setPrice(existingProduct.getPrice());
+            newProduct.setDescription(existingProduct.getDescription());
+            return productRepository.save(existingProduct);
+        } else {
+            // This is a new product, save it
+            return productRepository.save(newProduct);
+        }
     }
 
     public List<Product> findLowStockProducts(int threshold) {
@@ -32,9 +49,10 @@ public class ProductService {
 
     public Product sellProduct(Long id, int quantity) throws Exception {
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new Exception("Produit non trouvé"));
+                .orElseThrow(() -> new Exception("Product not found"));
         if (product.getQuantity() < quantity) {
-            throw new Exception("Stock insuffisant");
+            throw new Exception("Insufficient stock. you have only " + product.getQuantity() + " " +
+                    product.getProductName()  + " in your stock");
         }
         product.setQuantity(product.getQuantity() - quantity);
         return productRepository.save(product);

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Inventory Management - Sell Products</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .container-fluid {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sell-form {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      padding: 30px;
+      width: 100%;
+      max-width: 600px;
+      position: relative;
+    }
+    .page-title {
+      color: #007bff;
+      margin-bottom: 30px;
+      animation: fadeInDown 0.5s ease;
+    }
+    .btn-back {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      transition: all 0.3s ease;
+    }
+    .btn-back:hover {
+      transform: translateX(-5px);
+    }
+    .form-group {
+      margin-bottom: 25px;
+      animation: fadeInUp 0.5s ease;
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="sell-form">
+    <a href="/api/v1/inventory/home" class="btn btn-outline-secondary btn-back">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+    <h1 class="text-center page-title">Sell Products</h1>
+    <form th:action="@{/api/v1/inventory/sell}" method="post">
+      <div class="form-group">
+        <label for="productId">Product</label>
+        <select class="form-control" id="productId" name="productId" required>
+          <option value="">Select a product</option>
+          <option th:each="product : ${products}"
+                  th:value="${product.id}"
+                  th:text="${product.productName + ' (' + product.productId + ')'}"
+                  th:data-price="${product.price}">
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="quantity">Quantity to Sell</label>
+        <input type="number" class="form-control" id="quantity" name="quantity" required min="1" />
+      </div>
+      <div class="form-group">
+        <label for="totalPrice">Total Price</label>
+        <input type="text" class="form-control" id="totalPrice" readonly />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Sell</button>
+    </form>
+    <div th:if="${error}" class="alert alert-danger mt-3">
+      <p th:text="${error}"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const productSelect = document.getElementById('productId');
+  const quantityInput = document.getElementById('quantity');
+  const totalPriceInput = document.getElementById('totalPrice');
+
+  function updateTotalPrice() {
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    const price = selectedOption ? parseFloat(selectedOption.dataset.price) : 0;
+    const quantity = parseInt(quantityInput.value) || 0;
+    const totalPrice = price * quantity;
+    totalPriceInput.value = totalPrice.toFixed(2);
+  }
+
+  productSelect.addEventListener('change', updateTotalPrice);
+  quantityInput.addEventListener('input', updateTotalPrice);
+});
+</script>
+</body>
+</html>

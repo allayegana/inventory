@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Inventory Management - Home</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .dashboard {
+            padding: 2rem;
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+        .card-body {
+            padding: 2rem;
+            text-align: center;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+        .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .btn-logout {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animated {
+            animation: fadeIn 0.5s ease-in;
+        }
+    </style>
+</head>
+<body>
+<div class="container dashboard">
+  <h1 class="text-center mb-5">Inventory Management Dashboard</h1>
+  <a href="/logout" class="btn btn-outline-danger btn-logout">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </a>
+  <div class="row">
+    <div class="col-md-3 mb-4 animated" style="animation-delay: 0.1s;">
+      <div class="card h-100">
+        <div class="card-body">
+          <i class="fas fa-list icon text-primary"></i>
+          <h5 class="card-title">Product List</h5>
+          <a href="/api/v1/inventory/products" class="btn btn-primary mt-3">View Products</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-4 animated" style="animation-delay: 0.2s;">
+      <div class="card h-100">
+        <div class="card-body">
+          <i class="fas fa-cart-plus icon text-success"></i>
+          <h5 class="card-title">Sell Products</h5>
+          <a href="/api/v1/inventory/sell" class="btn btn-success mt-3">Sell</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-4 animated" style="animation-delay: 0.3s;">
+      <div class="card h-100">
+        <div class="card-body">
+          <i class="fas fa-plus-circle icon text-info"></i>
+          <h5 class="card-title">Add Product</h5>
+          <a href="/api/v1/inventory/product" class="btn btn-info mt-3">Add New</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-4 animated" style="animation-delay: 0.4s;">
+      <div class="card h-100">
+        <div class="card-body">
+          <i class="fas fa-chart-bar icon text-warning"></i>
+          <h5 class="card-title">Reports</h5>
+          <a href="/api/v1/inventory/reports" class="btn btn-warning mt-3">View Reports</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

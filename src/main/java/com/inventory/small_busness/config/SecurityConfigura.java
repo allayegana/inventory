@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -30,9 +31,13 @@ public class SecurityConfigura {
                         .permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests((requests) -> {
-                    requests.requestMatchers("/css/**", "/js/**", "/images/**", "/register", "/static/**", "/api/v1/inventory/login").permitAll();
-                    requests.anyRequest().authenticated();
+                    requests
+                            .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**", "/api/v1/inventory/login").permitAll()
+                            .requestMatchers("/api/v1/inventory/reports", "/api/v1/inventory/product", "/api/v1/inventory/register").hasAnyRole("MANAGER")
+                            .anyRequest().authenticated();
                 })
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .accessDeniedHandler(accessDeniedHandler()))
                 .build();
     }
 
@@ -45,5 +50,10 @@ public class SecurityConfigura {
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return (request, response, accessDeniedException) -> response.sendRedirect("/api/v1/inventory/access-denied");
     }
 }

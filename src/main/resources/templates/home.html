@@ -5,52 +5,87 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
+    body {
+        font-family: 'Arial', sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        color: #333;
+        min-height: 100vh;
+    }
+    .dashboard {
+        padding: 2rem;
+<!--        background-color: rgba(255, 255, 255, 0.8);-->
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        backdrop-filter: blur(4px);
+        margin-top: 2rem;
+        position: relative;
+    }
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background-color: white;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+    .card-body {
+        padding: 2rem;
+        text-align: center;
+    }
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-top: 1rem;
+        color: #2c3e50;
+    }
+    .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    .btn-logout {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    .btn-logout:hover {
+        background-color: #c0392b;
+        transform: translateY(-2px);
+    }
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
         }
-        .dashboard {
-            padding: 2rem;
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-        .card-body {
-            padding: 2rem;
-            text-align: center;
-        }
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: bold;
-            margin-top: 1rem;
-        }
-        .icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        .btn-logout {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .animated {
-            animation: fadeIn 0.5s ease-in;
-        }
-    </style>
+    }
+    .animated {
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+    h1 {
+        color: #ff5733;
+        margin-bottom: 2rem;
+        animation: fadeInUp 0.5s ease-out;
+    }
+    .btn {
+        transition: all 0.3s ease;
+    }
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+</style>
 </head>
-<body>
+<body style="background-image: url('https://img.freepik.com/free-vector/professional-dashboard-element-collection_23-2148360993.jpg?ga=GA1.1.1703043673.1722652104&semt=ais_hybrid');">
 <div class="container dashboard">
   <h1 class="text-center mb-5">Inventory Management Dashboard</h1>
   <a href="/logout" class="btn btn-outline-danger btn-logout">
@@ -90,6 +125,15 @@
           <i class="fas fa-chart-bar icon text-warning"></i>
           <h5 class="card-title">Reports</h5>
           <a href="/api/v1/inventory/reports" class="btn btn-warning mt-3">View Reports</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-4 animated" style="animation-delay: 0.5s;">
+      <div class="card h-100">
+        <div class="card-body">
+          <i class="fas fa-calendar-day icon text-danger"></i>
+          <h5 class="card-title">Daily Sales</h5>
+          <a href="/api/v1/inventory/daily-sales" class="btn btn-danger mt-3">View Daily Sales</a>
         </div>
       </div>
     </div>

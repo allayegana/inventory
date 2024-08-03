@@ -1,12 +1,18 @@
 package com.inventory.small_busness.Controller;
 
+import com.inventory.small_busness.Dto.SearchResult;
 import com.inventory.small_busness.Models.Product;
 import com.inventory.small_busness.Service.ProductService;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -21,11 +27,50 @@ public class HomeController {
         return "home";
     }
 
+    @GetMapping("/receipt")
+    public String showReceipt(Model model) {
+        return "receipt";
+    }
+
+    @GetMapping("/access-denied")
+    public String accessDenied(Model model) {
+        return "access-denied";
+    }
+
     @GetMapping("/products")
     public String getProducts(Model model) {
         List<Product> products = productService.findAll();
         model.addAttribute("products", products);
         return "products";
+    }
+
+
+    @GetMapping("/daily-sales-search")
+    public String getDailySales(@RequestParam(required = false) String productId,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateStart,
+                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd,
+                                Model model) {
+        List<Product> dailySales = productService.searchProducts(productId, dateStart, dateEnd);
+        double totalUnitPrice = productService.calculateTotalUnitPrice(dailySales);
+        double grandTotal = productService.calculateGrandTotal(dailySales);
+
+        model.addAttribute("dailySales", dailySales);
+        model.addAttribute("totalUnitPrice", totalUnitPrice);
+        model.addAttribute("grandTotal", grandTotal);
+
+        return "daily-sales";
+    }
+
+
+    @GetMapping("/daily-sales")
+    public String getDailySales(Model model) {
+        List<Product> dailySales = productService.getDailySales();
+        double grandTotal = productService.getGrandTotal(dailySales);
+
+        model.addAttribute("dailySales", dailySales);
+        model.addAttribute("grandTotal", grandTotal);
+
+        return "daily-sales";
     }
 
     @GetMapping("/sell")
@@ -45,7 +90,7 @@ public class HomeController {
     public String addProduct(Product product, Model model) {
         try {
             productService.addOrUpdateProduct(product);
-            return "redirect:/api/v1/inventory/product";
+            return "redirect:/api/v1/inventory/products";
         } catch (Exception e) {
             model.addAttribute("error", e.getMessage());
             return "product";
@@ -73,16 +118,64 @@ public class HomeController {
         }
     }
 
-    @PostMapping("/products/sell")
-    public String sellProduct(@RequestParam Long productId, @RequestParam int quantity, Model model) {
+    @GetMapping("/edit/{id}")
+    public String editProduct(@PathVariable Long id, Model model) {
+        Product product = productService.findById(id);
+        model.addAttribute("product", product);
+        return "editProduct";
+    }
+    @GetMapping("/delete/{id}")
+    public String deleteProduct(@PathVariable Long id) {
+        productService.deleteById(id);
+        return "redirect:/api/v1/inventory/reports";
+    }
+
+    @PostMapping("/edit")
+    public String updateProduct(@ModelAttribute Product product) {
+        productService.save(product);
+        return "redirect:/api/v1/inventory/reports";
+    }
+
+
+    @PostMapping("/sell")
+    public String sellProducts(@RequestParam("productId") List<Long> productIds,
+                               @RequestParam("quantity") List<Integer> quantities,
+                               RedirectAttributes redirectAttributes) {
         try {
-            productService.sellProduct(productId, quantity);
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            List<Product> products = productService.findAll();
-            model.addAttribute("products", products);
-            return "sell";
+            List<Product> productSales = new ArrayList<>();
+            double grandTotal = 0;
+
+            for (int i = 0; i < productIds.size(); i++) {
+                Long id = productIds.get(i);
+                int quantity = quantities.get(i);
+                Product product = productService.getProductById(id);
+
+                if (product.getQuantity() < quantity) {
+                    redirectAttributes.addFlashAttribute("error", "Not enough stock for " + product.getProductName());
+                    return "redirect:/api/v1/inventory/sell";
+                }
+
+                double totalPrice = product.getPrice() * quantity;
+
+                productSales.add(new Product(product.getProductName(), product.getProductId(), quantity, product.getPrice(), totalPrice));
+                grandTotal += totalPrice;
+
+                // Update product quantity
+                product.setQuantity(product.getQuantity() - quantity);
+                productService.updateProduct(product);
+            }
+
+            // Add sale to database or perform other necessary operations
+            // You might want to create a Sale entity and save it to the database here
+
+            // Add attributes for the receipt page
+            redirectAttributes.addFlashAttribute("productSales", productSales);
+            redirectAttributes.addFlashAttribute("grandTotal", grandTotal);
+
+            return "redirect:/api/v1/inventory/receipt";
+        } catch (EntityNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", "Product not found");
+            return "redirect:/api/v1/inventory/sell";
         }
-        return "redirect:/api/v1/inventory/products";
     }
 }

@@ -48,6 +48,9 @@
             border-color: #2980b9;
             color: white;
         }
+        .pagination {
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -59,13 +62,14 @@
     <div class="col-md-11 product-list">
       <h1 class="text-center page-title">Product List</h1>
       <div class="form-group">
-        <input type="text" id="searchInput" class="form-control" placeholder="Search by product name">
+        <input type="text" id="searchInput" class="form-control" placeholder="Search by product name or category">
       </div>
       <table class="table table-hover">
         <thead class="thead-light">
         <tr>
           <th>Product ID</th>
           <th>Product Name</th>
+          <th>Category</th>
           <th>Quantity</th>
           <th>Price</th>
           <th>Description</th>
@@ -75,12 +79,20 @@
         <tr th:each="product : ${products}">
           <td th:text="${product.productId}">Product ID</td>
           <td th:text="${product.productName}">Product Name</td>
+          <td th:text="${product.category}">Category</td>
           <td th:text="${product.quantity}">Quantity</td>
           <td th:text="${product.price}">Price</td>
           <td th:text="${product.description}">Description</td>
         </tr>
         </tbody>
       </table>
+      <nav>
+        <ul class="pagination">
+          <li class="page-item"><a class="page-link" href="#" aria-label="Previous" id="prevPage">&laquo;</a></li>
+          <li class="page-item"><span class="page-link" id="pageInfo">Page 1 of 1</span></li>
+          <li class="page-item"><a class="page-link" href="#" aria-label="Next" id="nextPage">&raquo;</a></li>
+        </ul>
+      </nav>
       <div class="text-center mt-4">
         <a href="/api/v1/inventory/product" class="btn btn-custom mr-2">Add New Product</a>
         <a href="/api/v1/inventory/sell" class="btn btn-custom">Sell Products</a>
@@ -89,7 +101,7 @@
   </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
@@ -97,19 +109,53 @@
         const searchInput = document.getElementById('searchInput');
         const productTableBody = document.getElementById('productTableBody');
         const productRows = productTableBody.getElementsByTagName('tr');
+        const prevPage = document.getElementById('prevPage');
+        const nextPage = document.getElementById('nextPage');
+        const pageInfo = document.getElementById('pageInfo');
+
+        let currentPage = 1;
+        const rowsPerPage = 5;
+        let totalRows = productRows.length;
+        let totalPages = Math.ceil(totalRows / rowsPerPage);
+
+        function renderTable(page) {
+            Array.from(productRows).forEach((row, index) => {
+                row.style.display = (index >= (page - 1) * rowsPerPage && index < page * rowsPerPage) ? '' : 'none';
+            });
+            pageInfo.textContent = `Page ${page} of ${totalPages}`;
+        }
 
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
 
             Array.from(productRows).forEach(function(row) {
                 const productName = row.getElementsByTagName('td')[1].textContent.toLowerCase();
-                if (productName.includes(searchTerm)) {
+                const category = row.getElementsByTagName('td')[2].textContent.toLowerCase();
+                if (productName.includes(searchTerm) || category.includes(searchTerm)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';
                 }
             });
         });
+
+        prevPage.addEventListener('click', function(event) {
+            event.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable(currentPage);
+            }
+        });
+
+        nextPage.addEventListener('click', function(event) {
+            event.preventDefault();
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable(currentPage);
+            }
+        });
+
+        renderTable(currentPage);
     });
 </script>
 </body>

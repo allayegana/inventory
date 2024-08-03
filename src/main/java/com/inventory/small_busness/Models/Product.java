@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
@@ -18,5 +20,22 @@ public class Product {
     private String productName;
     private int quantity;
     private double price;
+    private double totalPrice;
     private String description;
+    private LocalDate saleDate;
+
+    private LocalDate date;
+    private String category;
+
+    public double getTotalPrice() {
+        return this.quantity * this.price;
+    }
+
+    public Product(String productName, String productId, int quantity, double unitPrice, double totalPrice) {
+        this.productName = productName;
+        this.productId = productId;
+        this.quantity = quantity;
+        this.price = unitPrice;
+        this.totalPrice = totalPrice;
+    }
 }

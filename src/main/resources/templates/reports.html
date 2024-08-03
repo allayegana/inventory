@@ -62,7 +62,16 @@
         <div class="card-body">
           <h5 class="card-title">All Products Report</h5>
           <table class="table table-hover">
-            <!-- ... table header ... -->
+            <thead>
+            <tr>
+              <th>Product ID</th>
+              <th>Product Name</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
             <tbody>
             <tr th:each="product : ${allProducts}">
               <td th:text="${product.productId}">Product ID</td>
@@ -70,6 +79,14 @@
               <td th:text="${product.quantity}">Quantity</td>
               <td th:text="${product.price}">Price</td>
               <td th:text="${product.description}">Description</td>
+              <td>
+                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal" data-product-id="${product.productId}" data-product-name="${product.productName}" data-product-quantity="${product.quantity}" data-product-price="${product.price}" data-product-description="${product.description}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" data-product-id="${product.id}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
             </tr>
             </tbody>
           </table>
@@ -83,17 +100,99 @@
         <div class="card-body">
           <h5 class="card-title">Low Stock Products Report</h5>
           <table class="table table-hover">
-            <!-- ... table header ... -->
+            <thead>
+            <tr>
+              <th>Product ID</th>
+              <th>Product Name</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+            </thead>
             <tbody>
             <tr th:each="product : ${lowStockProducts}">
+              <td hidden="hidden" th:text="${product.id}"></td>
               <td th:text="${product.productId}">Product ID</td>
               <td th:text="${product.productName}">Product Name</td>
               <td th:text="${product.quantity}">Quantity</td>
               <td th:text="${product.price}">Price</td>
               <td th:text="${product.description}">Description</td>
+              <td>
+                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal" data-product-id="${product.productId}" data-product-name="${product.productName}" data-product-quantity="${product.quantity}" data-product-price="${product.price}" data-product-description="${product.description}">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" data-product-id="${product.id}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
             </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete this product?
+        </div>
+        <td>
+          <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal"
+                  data-product-id="${product.productId}" data-product-name="${product.productName}"
+                  data-product-quantity="${product.quantity}" data-product-price="${product.price}"
+                  data-product-description="${product.description}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal"
+                  data-product-id="${product.productId}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+
+      </div>
+    </div>
+  </div>
+  <!-- Edit Modal -->
+  <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm" th:action="@{/edit}" method="post">
+            <input type="hidden" id="editProductId" name="productId">
+            <div class="form-group">
+              <label for="editProductName">Product Name</label>
+              <input type="text" class="form-control" id="editProductName" name="productName">
+            </div>
+            <div class="form-group">
+              <label for="editProductQuantity">Quantity</label>
+              <input type="number" class="form-control" id="editProductQuantity" name="quantity">
+            </div>
+            <div class="form-group">
+              <label for="editProductPrice">Price</label>
+              <input type="number" class="form-control" id="editProductPrice" name="price">
+            </div>
+            <div class="form-group">
+              <label for="editProductDescription">Description</label>
+              <textarea class="form-control" id="editProductDescription" name="description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </form>
         </div>
       </div>
     </div>
@@ -103,5 +202,35 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+$('#deleteModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var productId = button.data('product-id');
+    var modal = $(this);
+    modal.find('#confirmDeleteBtn').data('product-id', productId);
+});
+
+$('#confirmDeleteBtn').on('click', function () {
+    var productId = $(this).data('product-id');
+    window.location.href = '/api/v1/inventory/delete/' + productId;
+});
+
+$('#editModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var productId = button.data('product-id');
+    var productName = button.data('product-name');
+    var productQuantity = button.data('product-quantity');
+    var productPrice = button.data('product-price');
+    var productDescription = button.data('product-description');
+
+    var modal = $(this);
+    modal.find('#editProductId').val(productId);
+    modal.find('#editProductName').val(productName);
+    modal.find('#editProductQuantity').val(productQuantity);
+    modal.find('#editProductPrice').val(productPrice);
+    modal.find('#editProductDescription').val(productDescription);
+});
+
+</script>
 </body>
 </html>

@@ -4,73 +4,85 @@
   <title>Inventory Management - Add Product</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
-    body, html {
-      height: 100%;
-      font-family: Arial, sans-serif;
-      background-color: #f8f9fa;
-      color: #333;
-    }
-    .container {
-      display: flex;
-      align-items: center;
-      height: 100%;
-    }
-    .add-product-form {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      padding: 20px;
-      width: 100%;
-    }
-    .page-title {
-      color: #28a745;
-      margin-bottom: 15px;
-      font-size: 1.5rem;
-    }
-    .form-group {
-      margin-bottom: 10px;
-    }
-    .form-control {
-      padding: 0.375rem 0.75rem;
-    }
-    .btn-block {
-      margin-top: 10px;
-    }
-  </style>
+        body, html {
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .add-product-form {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .page-title {
+            color: #28a745;
+            margin-bottom: 20px;
+            font-size: 1.75rem;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-control {
+            padding: 0.375rem 0.75rem;
+        }
+        .btn-block {
+            margin-top: 20px;
+        }
+        .btn-link {
+            color: #28a745;
+        }
+    </style>
 </head>
-<body>
+<body style="background-image: url('https://img.freepik.com/free-vector/professional-dashboard-element-collection_23-2148360993.jpg?ga=GA1.1.1703043673.1722652104&semt=ais_hybrid');">
 <div class="container">
-  <div class="col-md-6 mx-auto">
-    <div class="add-product-form">
-      <h2 class="text-center page-title">Add New Product</h2>
-      <form th:action="@{/api/v1/inventory/product}" th:object="${product}" method="post">
-        <div class="form-group">
-          <label for="productId">Product ID</label>
-          <input type="text" th:field="*{productId}" class="form-control" id="productId" required />
-        </div>
-        <div class="form-group">
-          <label for="productName">Product Name</label>
-          <input type="text" th:field="*{productName}" class="form-control" id="productName" required />
-        </div>
-        <div class="form-row">
-          <div class="form-group col-md-6">
-            <label for="quantity">Quantity</label>
-            <input type="number" th:field="*{quantity}" class="form-control" id="quantity" required min="0" />
-          </div>
-          <div class="form-group col-md-6">
-            <label for="price">Price</label>
-            <input type="number" th:field="*{price}" class="form-control" id="price" required step="0.01" min="0" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="description">Description</label>
-          <textarea th:field="*{description}" class="form-control" id="description" rows="2"></textarea>
-        </div>
-        <button type="submit" class="btn btn-success btn-block">Add Product</button>
-      </form>
-      <div class="text-center mt-2">
-        <a href="/api/v1/inventory/products" class="btn btn-link btn-sm">Back to Product List</a>
+  <div class="add-product-form">
+    <h2 class="page-title">Add New Product</h2>
+    <form th:action="@{/api/v1/inventory/product}" th:object="${product}" method="post">
+      <div class="form-group">
+        <label for="productName">Product Name</label>
+        <input type="text" th:field="*{productName}" class="form-control" id="productName" required />
       </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select th:field="*{category}" class="form-control" id="category" required>
+          <option value="">Select a category</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Books">Books</option>
+          <option value="Home & Kitchen">Home & Kitchen</option>
+          <option value="Toys & Games">Toys & Games</option>
+          <!-- Add more categories as needed -->
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="quantity">Quantity</label>
+          <input type="number" th:field="*{quantity}" class="form-control" id="quantity" required min="0" />
+        </div>
+        <div class="form-group col-md-6">
+          <label for="price">Price</label>
+          <input type="number" th:field="*{price}" class="form-control" id="price" required step="0.01" min="0" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea th:field="*{description}" class="form-control" id="description" rows="2"></textarea>
+      </div>
+      <button type="submit" class="btn btn-success btn-block">Add Product</button>
+    </form>
+    <div class="text-center mt-2">
+      <a href="/api/v1/inventory/products" class="btn btn-link btn-sm">Back to Product List</a>
     </div>
   </div>
 </div>

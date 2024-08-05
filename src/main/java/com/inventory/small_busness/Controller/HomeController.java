@@ -118,23 +118,33 @@ public class HomeController {
         }
     }
 
-    @GetMapping("/edit/{id}")
-    public String editProduct(@PathVariable Long id, Model model) {
-        Product product = productService.findById(id);
-        model.addAttribute("product", product);
-        return "editProduct";
-    }
+
     @GetMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Long id) {
         productService.deleteById(id);
         return "redirect:/api/v1/inventory/reports";
     }
 
+
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        Product product = productService.findById(id);
+        if (product != null) {
+            model.addAttribute("product", product);
+            return "editProduct"; // Assuming "editProduct" is your Thymeleaf template name
+        } else {
+            return "redirect:/api/v1/inventory/reports"; // Redirect if product is not found
+        }
+    }
+
+    // Method to handle the form submission
     @PostMapping("/edit")
-    public String updateProduct(@ModelAttribute Product product) {
-        productService.save(product);
+    public String editProduct(@ModelAttribute("product") Product product) {
+        productService.updateProduct(product);
+
         return "redirect:/api/v1/inventory/reports";
     }
+
 
 
     @PostMapping("/sell")
@@ -151,7 +161,8 @@ public class HomeController {
                 Product product = productService.getProductById(id);
 
                 if (product.getQuantity() < quantity) {
-                    redirectAttributes.addFlashAttribute("error", "Not enough stock for " + product.getProductName());
+                    redirectAttributes.addFlashAttribute("error", "Not enough stock for: " + product.getProductName()
+                            + " The rest in stock is: " +  product.getQuantity());
                     return "redirect:/api/v1/inventory/sell";
                 }
 

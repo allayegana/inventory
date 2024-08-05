@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -30,9 +31,7 @@ public class ProductService {
         return productRepository.findByQuantityLessThan(threshold);
     }
 
-    public Product findById(Long id) {
-        return productRepository.findById(id).orElse(null);
-    }
+
 
     public void save(Product product) {
         productRepository.save(product);
@@ -134,8 +133,24 @@ public class ProductService {
     }
 
     public void updateProduct(Product product) {
-        productRepository.save(product);
+        Product existP = productRepository.findById(product.getId()).orElse(null);
+        if (product.getId() == null) {
+            throw new IllegalArgumentException("Product ID must not be null");
+        }
+        assert existP != null;
+        existP.setProductName(product.getProductName());
+           product.setProductId(existP.getProductId());
+            existP.setQuantity(product.getQuantity());
+            existP.setPrice(product.getPrice());
+            existP.setDescription(product.getDescription());
+            productRepository.save(existP);
+
     }
+
+    public Product findById(Long id) {
+        return productRepository.findById(id).orElse(null);
+    }
+
 }
 
 

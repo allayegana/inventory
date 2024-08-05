@@ -27,13 +27,14 @@ public class SecurityConfigura {
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
                         .loginPage("/api/v1/inventory/login")
+                        .loginPage("/api/v1/inventory/register")
                         .defaultSuccessUrl("/api/v1/inventory/home", true)
                         .permitAll())
                 .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests((requests) -> {
                     requests
                             .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**", "/api/v1/inventory/login").permitAll()
-                            .requestMatchers("/api/v1/inventory/reports", "/api/v1/inventory/product", "/api/v1/inventory/register").hasAnyRole("MANAGER")
+                            .requestMatchers("/api/v1/inventory/reports", "/api/v1/inventory/product", "/api/v1/inventory/register","/api/v1/inventory/users").hasAnyRole("MANAGER")
                             .anyRequest().authenticated();
                 })
                 .exceptionHandling(exceptionHandling -> exceptionHandling

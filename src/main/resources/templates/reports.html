@@ -41,6 +41,15 @@
             top: 1rem;
             left: 1rem;
         }
+        .search-form {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .form-inline > * {
+            margin: 5px 10px;
+        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -56,6 +65,17 @@
   <a href="/api/v1/inventory/home" class="btn btn-outline-secondary btn-back">
     <i class="fas fa-arrow-left"></i> Back to Dashboard
   </a>
+
+  <!-- Search Form -->
+  <div class="search-form">
+    <form class="form-inline" action="/api/v1/inventory/daily-sales-search" method="get">
+      <input type="text" class="form-control mb-2 mr-sm-2" name="productId" placeholder="Product ID">
+      <input type="date" class="form-control mb-2 mr-sm-2" name="dateStart" placeholder="Start Date">
+      <input type="date" class="form-control mb-2 mr-sm-2" name="dateEnd" placeholder="End Date">
+      <button type="submit" class="btn btn-primary mb-2">Search</button>
+    </form>
+  </div>
+
   <div class="row">
     <div class="col-md-12 mb-4 animated" style="animation-delay: 0.1s;">
       <div class="card h-100">
@@ -80,10 +100,14 @@
               <td th:text="${product.price}">Price</td>
               <td th:text="${product.description}">Description</td>
               <td>
-                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal" data-product-id="${product.productId}" data-product-name="${product.productName}" data-product-quantity="${product.quantity}" data-product-price="${product.price}" data-product-description="${product.description}">
+                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal"
+                        th:data-product-id="${product.id}" th:data-product-name="${product.productName}"
+                        th:data-product-quantity="${product.quantity}" th:data-product-price="${product.price}"
+                        th:data-product-description="${product.description}">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" data-product-id="${product.id}">
+                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal"
+                        th:data-product-id="${product.id}">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -94,6 +118,7 @@
       </div>
     </div>
   </div>
+
   <div class="row mt-4">
     <div class="col-md-12 mb-4 animated" style="animation-delay: 0.2s;">
       <div class="card h-100">
@@ -112,17 +137,20 @@
             </thead>
             <tbody>
             <tr th:each="product : ${lowStockProducts}">
-              <td hidden="hidden" th:text="${product.id}"></td>
               <td th:text="${product.productId}">Product ID</td>
               <td th:text="${product.productName}">Product Name</td>
               <td th:text="${product.quantity}">Quantity</td>
               <td th:text="${product.price}">Price</td>
               <td th:text="${product.description}">Description</td>
               <td>
-                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal" data-product-id="${product.productId}" data-product-name="${product.productName}" data-product-quantity="${product.quantity}" data-product-price="${product.price}" data-product-description="${product.description}">
+                <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal"
+                        th:data-product-id="${product.id}" th:data-product-name="${product.productName}"
+                        th:data-product-quantity="${product.quantity}" th:data-product-price="${product.price}"
+                        th:data-product-description="${product.description}">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal" data-product-id="${product.id}">
+                <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal"
+                        th:data-product-id="${product.id}">
                   <i class="fas fa-trash"></i>
                 </button>
               </td>
@@ -133,6 +161,7 @@
       </div>
     </div>
   </div>
+
   <!-- Delete Confirmation Modal -->
   <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -146,22 +175,14 @@
         <div class="modal-body">
           Are you sure you want to delete this product?
         </div>
-        <td>
-          <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal"
-                  data-product-id="${product.productId}" data-product-name="${product.productName}"
-                  data-product-quantity="${product.quantity}" data-product-price="${product.price}"
-                  data-product-description="${product.description}">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal"
-                  data-product-id="${product.productId}">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+        </div>
       </div>
     </div>
   </div>
+
   <!-- Edit Modal -->
   <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -173,12 +194,13 @@
           </button>
         </div>
         <div class="modal-body">
-          <form id="editForm" th:action="@{/edit}" method="post">
-            <input type="hidden" id="editProductId" name="productId">
+          <form id="editForm" th:action="@{/api/v1/inventory/edit}" th:object="${product}" method="post">
+            <input type="hidden" id="editProductId" name="id">
             <div class="form-group">
               <label for="editProductName">Product Name</label>
               <input type="text" class="form-control" id="editProductName" name="productName">
             </div>
+
             <div class="form-group">
               <label for="editProductQuantity">Quantity</label>
               <input type="number" class="form-control" id="editProductQuantity" name="quantity">
@@ -204,19 +226,20 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
 $('#deleteModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var productId = button.data('product-id');
+    var button = $(event.relatedTarget); // Button that triggered the modal
+    var productId = button.data('product-id'); // Extract info from data-* attributes
     var modal = $(this);
-    modal.find('#confirmDeleteBtn').data('product-id', productId);
+    modal.find('.modal-body').text('Are you sure you want to delete this product with ID ' + productId + '?');
+    $('#confirmDeleteBtn').data('product-id', productId); // Set data for confirm button for deletion
 });
 
 $('#confirmDeleteBtn').on('click', function () {
     var productId = $(this).data('product-id');
-    window.location.href = '/api/v1/inventory/delete/' + productId;
+    window.location.href = '/api/v1/inventory/delete/' + productId; // Perform deletion operation
 });
 
 $('#editModal').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
+    var button = $(event.relatedTarget); // Button that triggered the modal
     var productId = button.data('product-id');
     var productName = button.data('product-name');
     var productQuantity = button.data('product-quantity');
@@ -230,7 +253,6 @@ $('#editModal').on('show.bs.modal', function (event) {
     modal.find('#editProductPrice').val(productPrice);
     modal.find('#editProductDescription').val(productDescription);
 });
-
 </script>
 </body>
 </html>

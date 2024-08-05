@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>User Management</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        .users-container {
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            backdrop-filter: blur(4px);
+            margin-top: 2rem;
+            position: relative;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .btn-back {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        .btn-back:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container users-container">
+
+  <h1 class="text-center mb-5">User List</h1>
+
+  <!-- Success Message -->
+  <div  th:if="${success}" class=" text-center alert alert-success" role="alert">
+  <p th:text="${success}"></p>
+  </div>
+
+  <!-- Error Message -->
+  <div th:if="${error}" class=" text-center alert alert-danger" role="alert">
+    <p th:text="${error}"></p>
+  </div>
+  <a href="/api/v1/inventory/home" class="btn btn-outline-primary btn-back">
+    <i class="fas fa-arrow-left"></i> Back to Dashboard
+  </a>
+  <table class="table table-hover table-striped mt-4">
+    <thead class="thead-dark">
+    <tr>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Role</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user : ${users}">
+      <td th:text="${user.username}"></td>
+      <td th:text="${user.email}"></td>
+      <td th:text="${user.role}">Role</td>
+      <td>
+        <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#editModal"
+                th:data-user-id="${user.id}" th:data-username="${user.username}"
+                th:data-email="${user.email}" th:data-role="${user.role}">
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal"
+                th:data-user-id="${user.id}" th:data-username="${user.username}">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Edit User</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="editUserForm" th:action="@{/api/v1/inventory/users/update}" method="post">
+          <input type="hidden" id="editUserId" name="id">
+          <div class="form-group">
+            <label for="editUsername">Name</label>
+            <input type="text" class="form-control" id="editUsername" name="username" required>
+          </div>
+          <div class="form-group">
+            <label for="editEmail">Email</label>
+            <input type="email" class="form-control" id="editEmail" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="editRole">Role</label>
+            <select class="form-control" id="editRole" name="role" required>
+              <option value="USER">USER</option>
+              <option value="MANAGER">MANAGER</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Delete User</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete user <strong id="deleteUsername"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $('#editModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var userId = button.data('user-id');
+        var username = button.data('username');
+        var email = button.data('email');
+        var role = button.data('role');
+
+        var modal = $(this);
+        modal.find('#editUserId').val(userId);
+        modal.find('#editUsername').val(username);
+        modal.find('#editEmail').val(email);
+        modal.find('#editRole').val(role);
+    });
+
+    $('#deleteModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var userId = button.data('user-id');
+        var username = button.data('username');
+
+        var modal = $(this);
+        modal.find('#deleteUsername').text(username);
+        $('#confirmDeleteBtn').off('click').on('click', function () {
+            window.location.href = '/api/v1/inventory/users/delete/' + userId;
+        });
+    });
+</script>
+</body>
+</html>

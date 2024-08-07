@@ -1,7 +1,10 @@
 package com.inventory.small_busness.Service;
 
 
+import com.inventory.small_busness.Dto.SaleDetail;
+import com.inventory.small_busness.Models.Customer;
 import com.inventory.small_busness.Models.Product;
+import com.inventory.small_busness.Repository.CustomerRepository;
 import com.inventory.small_busness.Repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +12,17 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     public List<Product> findAll() {
         return productRepository.findAll();
@@ -43,20 +49,24 @@ public class ProductService {
 
 
     public Product addOrUpdateProduct(Product newProduct) throws Exception {
-        Product existingProduct = productRepository.findByCategory(newProduct.getCategory());
+        newProduct.setDate(LocalDate.now());
 
-        if (existingProduct != null && newProduct.getProductName().equalsIgnoreCase(existingProduct.getProductName())) {
-            // Product with this category and name already exists, update the quantity
+        // Check for existing product with the same name and category
+        Product existingProduct = productRepository.findByCategoryAndProductName(newProduct.getCategory(), newProduct.getProductName());
+
+        if (existingProduct != null) {
+            // Product exists, update the quantity
             existingProduct.setQuantity(existingProduct.getQuantity() + newProduct.getQuantity());
-            existingProduct.setSaleDate(LocalDate.now());
             return productRepository.save(existingProduct);
         } else {
-            // This is a new product, generate a random 10-digit productId
+            // This is a new product, assign a new ID and save it
             newProduct.setProductId(generateRandomProductId());
-            newProduct.setSaleDate(LocalDate.now());
             return productRepository.save(newProduct);
         }
     }
+
+
+
 
     private String generateRandomProductId() {
         Random random = new Random();
@@ -69,45 +79,37 @@ public class ProductService {
         return productId.toString();
     }
 
-    public List<Product> getDailySales() {
+    public List<SaleDetail> getDailySalesDetails() {
         LocalDate today = LocalDate.now();
-        List<Product> dailySales = productRepository.findBySaleDate(today);
-
-        // Calculate total price for each product
-        for (Product product : dailySales) {
-            product.setTotalPrice(product.getQuantity() * product.getPrice());
-        }
-
-        return dailySales;
+        return customerRepository.findBySaleDate(today); // Implement this method in your repository
     }
 
-    // Calculate grand total
-
-    public double getGrandTotal(List<Product> dailySales) {
+    public double getGrandTotal(List<SaleDetail> dailySales) {
         return dailySales.stream()
-                .mapToDouble(Product::getTotalPrice)
+                .mapToDouble(SaleDetail::getTotalPrice)
                 .sum();
     }
 
-    public List<Product> searchProducts(String productId, LocalDate dateStart, LocalDate dateEnd) {
+
+    public List<Customer> searchProducts(String productId, LocalDate dateStart, LocalDate dateEnd) {
         if (productId != null && !productId.isEmpty() && dateStart != null) {
-            return productRepository.findByProductIdAndDateBetween(productId, dateStart, dateEnd);
+            return customerRepository.findByProductIdAndSaleDateBetween(productId, dateStart, dateEnd);
         } else if (productId != null && !productId.isEmpty()) {
-            return productRepository.findByProductId(productId);
+            return customerRepository.findByProductId(productId);
         } else {
-            return productRepository.findByDateBetween(dateStart, dateEnd);
+            return customerRepository.findBySaleDateBetween(dateStart, dateEnd);
         }
     }
 
-    public double calculateTotalUnitPrice(List<Product> products) {
+    public double calculateTotalUnitPrice(List<Customer> products) {
         return products.stream()
-                .mapToDouble(Product::getPrice)
+                .mapToDouble(Customer::getPrice)
                 .sum();
     }
 
-    public double calculateGrandTotal(List<Product> products) {
+    public double calculateGrandTotal(List<Customer> products) {
         return products.stream()
-                .mapToDouble(Product::getTotalPrice)
+                .mapToDouble(Customer::getTotalPrice)
                 .sum();
     }
 
@@ -115,18 +117,36 @@ public class ProductService {
         return productRepository.findByQuantityLessThan(threshold);
     }
 
-    public Product sellProduct(Long id, int quantity) throws Exception {
+    public Product sellProduct(Long id, int quantity, String clientName, String clientPhone, String paymentType) throws Exception {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new Exception("Product not found"));
+
         if (product.getQuantity() < quantity) {
-            throw new Exception("Insufficient stock. you have only " + product.getQuantity() + " " +
-                    product.getProductName() + " in your stock");
+            throw new Exception("Insufficient stock. You have only " + product.getQuantity() + " " +
+                    product.getProductName() + " in your stock.");
         }
+
         product.setQuantity(product.getQuantity() - quantity);
         product.setDate(LocalDate.now());
-        return productRepository.save(product);
-    }
+        Product updatedProduct = productRepository.save(product);
 
+        // Create a new sale record
+        Customer sale = new Customer();
+        sale.setProductId(product.getProductId());
+        sale.setProductName(product.getProductName());
+        sale.setQuantity(quantity);
+        sale.setPrice(product.getPrice());
+        sale.setTotalPrice(product.getPrice() * quantity);
+        sale.setClientName(clientName);
+        sale.setClientPhone(clientPhone);
+        sale.setPaymentType(paymentType);
+        sale.setSaleDate(LocalDate.now());
+
+        // Save the sale record to the database
+        customerRepository.save(sale);
+
+        return updatedProduct;
+    }
     public Product getProductById(Long productId) {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + productId));
@@ -142,6 +162,7 @@ public class ProductService {
            product.setProductId(existP.getProductId());
             existP.setQuantity(product.getQuantity());
             existP.setPrice(product.getPrice());
+            existP.setDate(LocalDate.now());
             existP.setDescription(product.getDescription());
             productRepository.save(existP);
 
@@ -151,6 +172,27 @@ public class ProductService {
         return productRepository.findById(id).orElse(null);
     }
 
+    public List<SaleDetail> getRecentSalesDetails() {
+        LocalDate today = LocalDate.now();
+        List<SaleDetail> sales = customerRepository.findBySaleDate(today); // Fetch sales from today
+
+        // Transform Sales into SaleDetails
+        return sales.stream()
+                .map(sale -> new SaleDetail(
+
+                        sale.getProductName(),
+                        sale.getQuantity(),
+                        sale.getPrice(),
+                        sale.getTotalPrice(),
+                        sale.getSaleDate(),
+                        sale.getClientName(),
+                        sale.getClientPhone(),
+                        sale.getProductId(),
+                        sale.getPaymentType()
+                ))
+                .collect(Collectors.toList());
+    }
 }
+
 
 

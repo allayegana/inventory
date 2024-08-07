@@ -28,20 +28,13 @@
             color: #f8f9fa;
         }
         .table {
-            color: #000; /* Ensures text color in table is black for readability */
-        }
-        .table th {
-            background: rgba(255, 255, 255, 0.8); /* Light background for headers */
-            color: #000; /* Black text color for headers */
-            text-align: center; /* Center-align header text */
-        }
-        .table td {
-            background: rgba(255, 255, 255, 0.6); /* Slightly different background for table cells */
-            color: #000; /* Black text color for cells */
+            color: #000;
+            background: rgba(255, 255, 255, 0.8);
         }
         .table th, .table td {
             vertical-align: middle;
-            padding: 10px; /* Add some padding for better readability */
+            padding: 10px;
+            text-align: center;
         }
         .table-striped tbody tr:nth-of-type(odd) {
             background-color: rgba(0, 0, 0, 0.05);
@@ -71,7 +64,7 @@
 <div class="container mt-5">
     <a href="/api/v1/inventory/home" class="btn btn-outline-secondary btn-back">
         <i class="fas fa-arrow-left"></i> Back
-    </a><!-- Replace '#' with the actual URL you want to go back to -->
+    </a>
     <h1>Daily Sales</h1>
     <form action="/api/v1/inventory/daily-sales-search" method="get">
         <div class="form-row">
@@ -90,20 +83,26 @@
     <table class="table table-striped table-hover mt-3">
         <thead>
         <tr>
+            <th>Product ID</th>
             <th>Product Name</th>
             <th>Quantity</th>
+            <th>Client</th>
+            <th>Phone</th>
             <th>Unit Price</th>
             <th>Total Price</th>
             <th>Sale Date</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="product : ${dailySales}">
-            <td th:text="${product.productName}"></td>
-            <td th:text="${product.quantity}"></td>
-            <td th:text="${product.price}"></td>
-            <td th:text="${product.quantity * product.price}"></td>
-            <td th:text="${product.date}"></td>
+        <tr th:each="sale : ${dailySales}">
+            <td th:text="${sale.productId}"></td>
+            <td th:text="${sale.productName}"></td>
+            <td th:text="${sale.quantity}"></td>
+            <td th:text="${sale.clientName}"></td>
+            <td th:text="${sale.clientPhone}"></td>
+            <td th:text="${sale.price}"></td>
+            <td th:text="${sale.totalPrice}"></td>
+            <td th:text="${#temporals.format(sale.saleDate, 'MM-dd-yyyy')}"></td>
         </tr>
         </tbody>
     </table>

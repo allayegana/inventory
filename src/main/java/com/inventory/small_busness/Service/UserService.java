@@ -15,20 +15,6 @@ import java.util.Objects;
 @Service
 public class UserService implements UserDetailsService {
 
-//    @Autowired
-//    private UserRepository userRepository;
-//
-//    private PasswordEncoder passwordEncoder;
-//
-//    public void save(User user) {
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
-//        userRepository.save(user);
-//    }
-//
-//    public User findByUsername(String username) {
-//        return userRepository.findByUsername(username)  .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//    }
-
     @Autowired
     private UserRepository repository;
 
@@ -73,10 +59,10 @@ public class UserService implements UserDetailsService {
     public void deleteUsers(Long id) throws Exception {
         var existingUser = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: "));
-        if (!Objects.equals(existingUser.getRole(), "MANAGER")){
+        if (!Objects.equals(existingUser.getRole(), "MANAGER")) {
             repository.deleteById(existingUser.getId());
-        }else {
-            throw  new Exception("I AM THE MANAGER");
+        } else {
+            throw new Exception("You cannot delete the MANAGER");
         }
     }
 }

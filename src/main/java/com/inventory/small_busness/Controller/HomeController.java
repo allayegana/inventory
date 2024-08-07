@@ -1,6 +1,8 @@
 package com.inventory.small_busness.Controller;
 
+import com.inventory.small_busness.Dto.SaleDetail;
 import com.inventory.small_busness.Dto.SearchResult;
+import com.inventory.small_busness.Models.Customer;
 import com.inventory.small_busness.Models.Product;
 import com.inventory.small_busness.Service.ProductService;
 import jakarta.persistence.EntityNotFoundException;
@@ -28,7 +30,7 @@ public class HomeController {
     }
 
     @GetMapping("/receipt")
-    public String showReceipt(Model model) {
+    public String receipt(Model model) {
         return "receipt";
     }
 
@@ -50,7 +52,7 @@ public class HomeController {
                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateStart,
                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateEnd,
                                 Model model) {
-        List<Product> dailySales = productService.searchProducts(productId, dateStart, dateEnd);
+        List<Customer> dailySales = productService.searchProducts(productId, dateStart, dateEnd);
         double totalUnitPrice = productService.calculateTotalUnitPrice(dailySales);
         double grandTotal = productService.calculateGrandTotal(dailySales);
 
@@ -64,8 +66,8 @@ public class HomeController {
 
     @GetMapping("/daily-sales")
     public String getDailySales(Model model) {
-        List<Product> dailySales = productService.getDailySales();
-        double grandTotal = productService.getGrandTotal(dailySales);
+        List<SaleDetail> dailySales = productService.getDailySalesDetails(); // Ensure this matches your service layer
+        double grandTotal = productService.getGrandTotal(dailySales); // This needs to be adjusted if SaleDetail is used
 
         model.addAttribute("dailySales", dailySales);
         model.addAttribute("grandTotal", grandTotal);
@@ -92,10 +94,24 @@ public class HomeController {
             productService.addOrUpdateProduct(product);
             return "redirect:/api/v1/inventory/products";
         } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", "Failed to add or update the product: " + e.getMessage());
+            e.printStackTrace();  // For backend debugging
             return "product";
         }
     }
+
+
+    @GetMapping("/receipt-sale")
+    public String showReceipt(Model model) {
+        List<SaleDetail> productSales = productService.getRecentSalesDetails();
+        double grandTotal = productService.getGrandTotal(productSales);
+
+        model.addAttribute("productSales", productSales);
+        model.addAttribute("grandTotal", grandTotal);
+
+        return "receipt"; // Thymeleaf template name
+    }
+
 
     @GetMapping("/products/low-stock")
     public String getLowStockProducts(Model model) {
@@ -150,6 +166,9 @@ public class HomeController {
     @PostMapping("/sell")
     public String sellProducts(@RequestParam("productId") List<Long> productIds,
                                @RequestParam("quantity") List<Integer> quantities,
+                               @RequestParam("clientName") String clientName,
+                               @RequestParam("clientPhone") String clientPhone,
+                               @RequestParam("paymentType") String paymentType,
                                RedirectAttributes redirectAttributes) {
         try {
             List<Product> productSales = new ArrayList<>();
@@ -158,35 +177,29 @@ public class HomeController {
             for (int i = 0; i < productIds.size(); i++) {
                 Long id = productIds.get(i);
                 int quantity = quantities.get(i);
-                Product product = productService.getProductById(id);
 
-                if (product.getQuantity() < quantity) {
-                    redirectAttributes.addFlashAttribute("error", "Not enough stock for: " + product.getProductName()
-                            + " The rest in stock is: " +  product.getQuantity());
-                    return "redirect:/api/v1/inventory/sell";
-                }
+                Product updatedProduct = productService.sellProduct(id, quantity, clientName, clientPhone, paymentType);
+                double totalPrice = updatedProduct.getPrice() * quantity;
 
-                double totalPrice = product.getPrice() * quantity;
-
-                productSales.add(new Product(product.getProductName(), product.getProductId(), quantity, product.getPrice(), totalPrice));
+                productSales.add(new Product(updatedProduct.getProductName(), updatedProduct.getProductId(), quantity, updatedProduct.getPrice()));
                 grandTotal += totalPrice;
-
-                // Update product quantity
-                product.setQuantity(product.getQuantity() - quantity);
-                productService.updateProduct(product);
             }
-
-            // Add sale to database or perform other necessary operations
-            // You might want to create a Sale entity and save it to the database here
 
             // Add attributes for the receipt page
             redirectAttributes.addFlashAttribute("productSales", productSales);
             redirectAttributes.addFlashAttribute("grandTotal", grandTotal);
+            redirectAttributes.addFlashAttribute("clientName", clientName);
+            redirectAttributes.addFlashAttribute("clientPhone", clientPhone);
+            redirectAttributes.addFlashAttribute("paymentType", paymentType);
 
             return "redirect:/api/v1/inventory/receipt";
         } catch (EntityNotFoundException e) {
             redirectAttributes.addFlashAttribute("error", "Product not found");
             return "redirect:/api/v1/inventory/sell";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/api/v1/inventory/sell";
         }
     }
+
 }

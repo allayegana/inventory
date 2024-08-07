@@ -27,7 +27,6 @@ public class SecurityConfigura {
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
                         .loginPage("/api/v1/inventory/login")
-                        .loginPage("/api/v1/inventory/register")
                         .defaultSuccessUrl("/api/v1/inventory/home", true)
                         .permitAll())
                 .httpBasic(Customizer.withDefaults())

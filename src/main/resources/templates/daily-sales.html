@@ -51,9 +51,6 @@
             justify-content: center;
             margin-top: 20px;
         }
-        .btn-back {
-            margin-bottom: 20px;
-        }
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -91,9 +88,10 @@
             <th>Unit Price</th>
             <th>Total Price</th>
             <th>Sale Date</th>
+            <th>Payment Type</th>
         </tr>
         </thead>
-        <tbody>
+        <tbody id="productTableBody">
         <tr th:each="sale : ${dailySales}">
             <td th:text="${sale.productId}"></td>
             <td th:text="${sale.productName}"></td>
@@ -103,6 +101,7 @@
             <td th:text="${sale.price}"></td>
             <td th:text="${sale.totalPrice}"></td>
             <td th:text="${#temporals.format(sale.saleDate, 'MM-dd-yyyy')}"></td>
+            <td th:text="${sale.paymentType}"></td>
         </tr>
         </tbody>
     </table>
@@ -110,21 +109,17 @@
         <h4>Grand Total: <span th:text="${grandTotal}"></span></h4>
     </div>
     <nav>
-        <ul class="pagination">
-            <li class="page-item disabled">
-                <span class="page-link">Previous</span>
+        <ul class="pagination justify-content-center" id="pagination">
+            <li class="page-item" id="prevPage">
+                <a class="page-link" href="#" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
             </li>
-            <li class="page-item active">
-                <span class="page-link">1</span>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">2</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">3</a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="#">Next</a>
+            <!-- Page numbers will be dynamically inserted here -->
+            <li class="page-item" id="nextPage">
+                <a class="page-link" href="#" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
             </li>
         </ul>
     </nav>
@@ -132,5 +127,70 @@
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productTableBody = document.getElementById('productTableBody');
+    const productRows = productTableBody.getElementsByTagName('tr');
+    const prevPage = document.getElementById('prevPage');
+    const nextPage = document.getElementById('nextPage');
+    const pagination = document.getElementById('pagination');
+
+    let currentPage = 1;
+    const rowsPerPage = 5;
+    let totalRows = productRows.length;
+    let totalPages = Math.ceil(totalRows / rowsPerPage);
+
+    function renderTable(page) {
+        Array.from(productRows).forEach((row, index) => {
+            row.style.display = (index >= (page - 1) * rowsPerPage && index < page * rowsPerPage) ? '' : 'none';
+        });
+        updatePagination();
+    }
+
+    function updatePagination() {
+        // Remove existing page numbers
+        const pageNumbers = pagination.querySelectorAll('.page-number');
+        pageNumbers.forEach(pageNumber => pageNumber.parentNode.removeChild(pageNumber));
+
+        // Create page number links
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement('li');
+            li.className = 'page-item page-number' + (i === currentPage ? ' active' : '');
+            li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+            pagination.insertBefore(li, nextPage); // Insert before the Next button
+        }
+
+        // Disable Previous and Next buttons
+        prevPage.classList.toggle('disabled', currentPage === 1);
+        nextPage.classList.toggle('disabled', currentPage === totalPages);
+    }
+
+    prevPage.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+            currentPage--;
+            renderTable(currentPage);
+        }
+    });
+
+    nextPage.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderTable(currentPage);
+        }
+    });
+
+    pagination.addEventListener('click', function(e) {
+        if (e.target.matches('.page-link[data-page]')) {
+            e.preventDefault();
+            currentPage = parseInt(e.target.getAttribute('data-page'));
+            renderTable(currentPage);
+        }
+    });
+
+    renderTable(currentPage); // Initial render
+});
+</script>
 </body>
 </html>
